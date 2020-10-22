@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.chenlw.example</groupId>
-	<artifactId>my-system-security-examole</artifactId>
+	<artifactId>my-system-security-example</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>my-system-security-examole</name>
+	<name>my-system-security-example</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
@@ -30,6 +30,7 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
