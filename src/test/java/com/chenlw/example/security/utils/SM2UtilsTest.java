@@ -39,7 +39,6 @@ public class SM2UtilsTest {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             Assert.fail();
-
         }
 
     }
