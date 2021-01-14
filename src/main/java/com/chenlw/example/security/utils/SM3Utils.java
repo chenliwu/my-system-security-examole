@@ -17,7 +17,9 @@ import java.util.Arrays;
 public class SM3Utils {
 
     static {
-        Security.addProvider(new BouncyCastleProvider());
+        if (Security.getProvider("BC") == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
     }
 
     /**

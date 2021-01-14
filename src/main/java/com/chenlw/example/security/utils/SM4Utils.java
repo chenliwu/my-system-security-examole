@@ -25,7 +25,9 @@ import java.security.*;
 public class SM4Utils {
 
     static {
-        Security.addProvider(new BouncyCastleProvider());
+        if (Security.getProvider("BC") == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
     }
 
     public static final String ALGORITHM_NAME = "SM4";
