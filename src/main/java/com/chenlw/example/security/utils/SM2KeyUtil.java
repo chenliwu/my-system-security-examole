@@ -4,6 +4,7 @@ import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 
+import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -67,6 +68,25 @@ public class SM2KeyUtil {
     }
 
     /**
+     * 从文件读取私钥
+     *
+     * @param inputStream 输入流
+     * @return 私钥
+     * @throws Exception 异常
+     */
+    public static PrivateKey getPrimaryKey(InputStream inputStream) throws Exception {
+        try {
+            String priKeyPerString = FileUtil.readInputStream(inputStream, CHARSET_NAME);
+            // System.out.println(priKeyPerString);
+            byte[] priKeyFromPem = BCECUtil.convertECPrivateKeyPEMToPKCS8(priKeyPerString);
+            return BCECUtil.convertPKCS8ToECPrivateKey(priKeyFromPem);
+        } catch (Exception e) {
+            System.out.println("异常：" + e.getMessage());
+            throw new Exception("读取私钥失败");
+        }
+    }
+
+    /**
      * 从文件读取公钥
      *
      * @param filePath 文件路径
@@ -80,6 +100,25 @@ public class SM2KeyUtil {
 //            System.out.println();
 //            System.out.println("==========公钥perString=======");
 //            System.out.println(pubKeyX509PemString);
+            byte[] pubKeyX509Byte = BCECUtil.convertECPublicKeyPEMToX509(pubKeyX509PemString);
+            return BCECUtil.convertX509ToECPublicKey(pubKeyX509Byte);
+        } catch (Exception e) {
+            System.out.println("异常：" + e.getMessage());
+            throw new Exception("读取公钥失败");
+        }
+    }
+
+    /**
+     * 从文件读取公钥
+     *
+     * @param inputStream 输入流
+     * @return 公钥
+     * @throws Exception 异常
+     */
+    public static PublicKey getPublicKey(InputStream inputStream) throws Exception {
+        try {
+            // 从.pem文件读取公钥
+            String pubKeyX509PemString = FileUtil.readInputStream(inputStream, CHARSET_NAME);
             byte[] pubKeyX509Byte = BCECUtil.convertECPublicKeyPEMToX509(pubKeyX509PemString);
             return BCECUtil.convertX509ToECPublicKey(pubKeyX509Byte);
         } catch (Exception e) {

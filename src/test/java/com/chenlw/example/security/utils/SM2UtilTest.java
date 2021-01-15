@@ -150,8 +150,11 @@ public class SM2UtilTest {
     @Test
     public void testGetKeyFromFileToSign_1() {
         try {
-            PrivateKey priKey = SM2KeyUtil.getPrimaryKey("target/ec.pkcs8.pri.pem");
-            PublicKey publicKey = SM2KeyUtil.getPublicKey("target/ec.x509.pub.pem");
+//            PrivateKey priKey = SM2KeyUtil.getPrimaryKey("target/ec.pkcs8.pri.pem");
+//            PublicKey publicKey = SM2KeyUtil.getPublicKey("target/ec.x509.pub.pem");
+
+            PrivateKey priKey = SM2KeyUtil.getPrimaryKey(new FileInputStream("target/ec.pkcs8.pri.pem"));
+            PublicKey publicKey = SM2KeyUtil.getPublicKey(new FileInputStream("target/ec.x509.pub.pem"));
 
             String srcData = "测试报文数据";
             // 签名
