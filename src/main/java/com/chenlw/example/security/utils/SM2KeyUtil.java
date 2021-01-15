@@ -34,12 +34,12 @@ public class SM2KeyUtil {
             byte[] priKeyPkcs8Der = BCECUtil.convertECPrivateKeyToPKCS8(priKey, pubKey);
             String priKeyPkcs8Pem = BCECUtil.convertECPrivateKeyPKCS8ToPEM(priKeyPkcs8Der);
             // 导出私钥到.pem文件
-            FileUtil.writeFile("target/ec.pkcs8.pri.pem", priKeyPkcs8Pem.getBytes(CHARSET_NAME));
+            FileUtil.writeFile(privateKeyFilePath, priKeyPkcs8Pem.getBytes(CHARSET_NAME));
 
             byte[] pubKeyX509Der = BCECUtil.convertECPublicKeyToX509(pubKey);
             String pubKeyX509Pem = BCECUtil.convertECPublicKeyX509ToPEM(pubKeyX509Der);
             // 导出公钥到.pem文件
-            FileUtil.writeFile("target/ec.x509.pub.pem", pubKeyX509Pem.getBytes(CHARSET_NAME));
+            FileUtil.writeFile(publicKeyFilePath, pubKeyX509Pem.getBytes(CHARSET_NAME));
         } catch (Exception e) {
             System.out.println("异常：" + e.getMessage());
             throw new Exception("导出公钥和私钥失败");
