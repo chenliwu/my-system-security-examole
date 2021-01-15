@@ -10,11 +10,13 @@ import org.bouncycastle.util.encoders.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.FileInputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 /**
  * <br>
@@ -23,6 +25,61 @@ import java.security.cert.X509Certificate;
  * <b>日期：</b> 2021-01-14  <br>
  */
 public class SM2UtilTest {
+
+    /**
+     * 获取公钥对象
+     *
+     * @param inputStream  公钥输入流
+     * @param keyAlgorithm 密钥算法
+     * @return 公钥对象
+     * @throws Exception
+     */
+    public static PublicKey getPublicKey(InputStream inputStream, String keyAlgorithm) throws Exception {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder sb = new StringBuilder();
+            String readLine = null;
+            while ((readLine = br.readLine()) != null) {
+                if (readLine.charAt(0) == '-') {
+                    continue;
+                } else {
+                    sb.append(readLine);
+                    sb.append('\r');
+                }
+            }
+            X509EncodedKeySpec pubX509 = new X509EncodedKeySpec(Base64.decode(sb.toString().getBytes("UTF-8")));
+            KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm);
+            PublicKey publicKey = keyFactory.generatePublic(pubX509);
+            return publicKey;
+        } catch (FileNotFoundException e) {
+            throw new Exception("公钥路径文件不存在");
+        } catch (IOException e) {
+            throw new Exception("读取公钥异常");
+        } catch (NoSuchAlgorithmException e) {
+            throw new Exception(String.format("生成密钥工厂时没有[%s]此类算法", keyAlgorithm));
+        } catch (InvalidKeySpecException e) {
+            System.out.println(e.getMessage());
+            throw new Exception("生成公钥对象异常");
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    @Test
+    public void testGetPublicKey() {
+        try {
+            PublicKey publicKey = getPublicKey(new FileInputStream("target/ec.pkcs8.pri.pem"),"EC");
+            Assert.assertNotNull(publicKey);
+        } catch (Exception e) {
+            System.out.println("异常：" + e.getMessage());
+            Assert.fail();
+        }
+    }
 
     /**
      * 生成.pem证书文件
