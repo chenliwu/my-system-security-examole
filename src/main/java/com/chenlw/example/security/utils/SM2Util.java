@@ -21,7 +21,7 @@ import java.security.*;
 import java.security.spec.ECFieldFp;
 import java.security.spec.EllipticCurve;
 
-public class SM2Utils {
+public class SM2Util {
     static {
         if (Security.getProvider("BC") == null) {
             Security.addProvider(new BouncyCastleProvider());
@@ -46,7 +46,7 @@ public class SM2Utils {
     public static final ECPoint G_POINT = CURVE.createPoint(SM2_ECC_GX, SM2_ECC_GY);
     public static final ECDomainParameters DOMAIN_PARAMS = new ECDomainParameters(CURVE, G_POINT,
             SM2_ECC_N, SM2_ECC_H);
-    public static final int CURVE_LEN = BCECUtils.getCurveLength(DOMAIN_PARAMS);
+    public static final int CURVE_LEN = BCECUtil.getCurveLength(DOMAIN_PARAMS);
     //////////////////////////////////////////////////////////////////////////////////////
 
     public static final EllipticCurve JDK_CURVE = new EllipticCurve(new ECFieldFp(SM2_ECC_P), SM2_ECC_A, SM2_ECC_B);
@@ -66,7 +66,7 @@ public class SM2Utils {
      */
     public static AsymmetricCipherKeyPair generateKeyPairParameter() {
         SecureRandom random = new SecureRandom();
-        return BCECUtils.generateKeyPairParameter(DOMAIN_PARAMS, random);
+        return BCECUtil.generateKeyPairParameter(DOMAIN_PARAMS, random);
     }
 
     /**
@@ -80,7 +80,7 @@ public class SM2Utils {
     public static KeyPair generateKeyPair() throws NoSuchProviderException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException {
         SecureRandom random = new SecureRandom();
-        return BCECUtils.generateKeyPair(DOMAIN_PARAMS, random);
+        return BCECUtil.generateKeyPair(DOMAIN_PARAMS, random);
     }
 
     /**
@@ -113,7 +113,7 @@ public class SM2Utils {
      * @throws InvalidCipherTextException
      */
     public static byte[] encrypt(BCECPublicKey pubKey, byte[] srcData) throws InvalidCipherTextException {
-        ECPublicKeyParameters pubKeyParameters = BCECUtils.convertPublicKeyToParameters(pubKey);
+        ECPublicKeyParameters pubKeyParameters = BCECUtil.convertPublicKeyToParameters(pubKey);
         return encrypt(Mode.C1C3C2, pubKeyParameters, srcData);
     }
 
@@ -125,7 +125,7 @@ public class SM2Utils {
      * @throws InvalidCipherTextException
      */
     public static byte[] encrypt(Mode mode, BCECPublicKey pubKey, byte[] srcData) throws InvalidCipherTextException {
-        ECPublicKeyParameters pubKeyParameters = BCECUtils.convertPublicKeyToParameters(pubKey);
+        ECPublicKeyParameters pubKeyParameters = BCECUtil.convertPublicKeyToParameters(pubKey);
         return encrypt(mode, pubKeyParameters, srcData);
     }
 
@@ -162,7 +162,7 @@ public class SM2Utils {
      * @throws InvalidCipherTextException
      */
     public static byte[] decrypt(BCECPrivateKey priKey, byte[] sm2Cipher) throws InvalidCipherTextException {
-        ECPrivateKeyParameters priKeyParameters = BCECUtils.convertPrivateKeyToParameters(priKey);
+        ECPrivateKeyParameters priKeyParameters = BCECUtil.convertPrivateKeyToParameters(priKey);
         return decrypt(Mode.C1C3C2, priKeyParameters, sm2Cipher);
     }
 
@@ -174,7 +174,7 @@ public class SM2Utils {
      * @throws InvalidCipherTextException
      */
     public static byte[] decrypt(Mode mode, BCECPrivateKey priKey, byte[] sm2Cipher) throws InvalidCipherTextException {
-        ECPrivateKeyParameters priKeyParameters = BCECUtils.convertPrivateKeyToParameters(priKey);
+        ECPrivateKeyParameters priKeyParameters = BCECUtil.convertPrivateKeyToParameters(priKey);
         return decrypt(mode, priKeyParameters, sm2Cipher);
     }
 
@@ -211,7 +211,7 @@ public class SM2Utils {
      * @throws Exception
      */
     public static SM2Cipher parseSM2Cipher(byte[] cipherText) throws Exception {
-        int curveLength = BCECUtils.getCurveLength(DOMAIN_PARAMS);
+        int curveLength = BCECUtil.getCurveLength(DOMAIN_PARAMS);
         return parseSM2Cipher(Mode.C1C3C2, curveLength, SM3_DIGEST_LENGTH, cipherText);
     }
 
@@ -223,7 +223,7 @@ public class SM2Utils {
      * @return
      */
     public static SM2Cipher parseSM2Cipher(Mode mode, byte[] cipherText) throws Exception {
-        int curveLength = BCECUtils.getCurveLength(DOMAIN_PARAMS);
+        int curveLength = BCECUtil.getCurveLength(DOMAIN_PARAMS);
         return parseSM2Cipher(mode, curveLength, SM3_DIGEST_LENGTH, cipherText);
     }
 
@@ -281,7 +281,7 @@ public class SM2Utils {
      * @throws IOException
      */
     public static byte[] encodeSM2CipherToDER(byte[] cipher) throws Exception {
-        int curveLength = BCECUtils.getCurveLength(DOMAIN_PARAMS);
+        int curveLength = BCECUtil.getCurveLength(DOMAIN_PARAMS);
         return encodeSM2CipherToDER(Mode.C1C3C2, curveLength, SM3_DIGEST_LENGTH, cipher);
     }
 
@@ -294,7 +294,7 @@ public class SM2Utils {
      * @throws Exception
      */
     public static byte[] encodeSM2CipherToDER(Mode mode, byte[] cipher) throws Exception {
-        int curveLength = BCECUtils.getCurveLength(DOMAIN_PARAMS);
+        int curveLength = BCECUtil.getCurveLength(DOMAIN_PARAMS);
         return encodeSM2CipherToDER(mode, curveLength, SM3_DIGEST_LENGTH, cipher);
     }
 
@@ -421,7 +421,7 @@ public class SM2Utils {
      * @throws CryptoException
      */
     public static byte[] sign(BCECPrivateKey priKey, byte[] srcData) throws CryptoException {
-        ECPrivateKeyParameters priKeyParameters = BCECUtils.convertPrivateKeyToParameters(priKey);
+        ECPrivateKeyParameters priKeyParameters = BCECUtil.convertPrivateKeyToParameters(priKey);
         return sign(priKeyParameters, null, srcData);
     }
 
@@ -448,7 +448,7 @@ public class SM2Utils {
      * @throws CryptoException
      */
     public static byte[] sign(BCECPrivateKey priKey, byte[] withId, byte[] srcData) throws CryptoException {
-        ECPrivateKeyParameters priKeyParameters = BCECUtils.convertPrivateKeyToParameters(priKey);
+        ECPrivateKeyParameters priKeyParameters = BCECUtil.convertPrivateKeyToParameters(priKey);
         return sign(priKeyParameters, withId, srcData);
     }
 
@@ -521,7 +521,7 @@ public class SM2Utils {
      * @return
      */
     public static boolean verify(BCECPublicKey pubKey, byte[] srcData, byte[] sign) {
-        ECPublicKeyParameters pubKeyParameters = BCECUtils.convertPublicKeyToParameters(pubKey);
+        ECPublicKeyParameters pubKeyParameters = BCECUtil.convertPublicKeyToParameters(pubKey);
         return verify(pubKeyParameters, null, srcData, sign);
     }
 
@@ -548,7 +548,7 @@ public class SM2Utils {
      * @return
      */
     public static boolean verify(BCECPublicKey pubKey, byte[] withId, byte[] srcData, byte[] sign) {
-        ECPublicKeyParameters pubKeyParameters = BCECUtils.convertPublicKeyToParameters(pubKey);
+        ECPublicKeyParameters pubKeyParameters = BCECUtil.convertPublicKeyToParameters(pubKey);
         return verify(pubKeyParameters, withId, srcData, sign);
     }
 

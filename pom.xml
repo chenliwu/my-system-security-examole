@@ -42,6 +42,19 @@
 			<scope>test</scope>
 		</dependency>
 
+<!--		&lt;!&ndash;  国密算法   &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>org.bouncycastle</groupId>-->
+<!--			<artifactId>bcprov-jdk15on</artifactId>-->
+<!--			<version>1.65</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.bouncycastle</groupId>-->
+<!--			<artifactId>bcpkix-jdk15on</artifactId>-->
+<!--			<version>1.65</version>-->
+<!--		</dependency>-->
+<!--		&lt;!&ndash;  国密算法   &ndash;&gt;-->
+
 		<!--  国密算法   -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>

@@ -10,11 +10,18 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.params.ParametersWithRandom;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.*;
+import java.security.cert.CertPathBuilderException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
@@ -30,9 +37,84 @@ import java.util.Enumeration;
  */
 public class MySM2Utils {
 
+    static {
+        if (Security.getProvider("BC") == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
+
+    // private static X9ECParameters x9ECParameters = GMNamedCurves.getByName("sm2p256v1");
     private static X9ECParameters x9ECParameters = GMNamedCurves.getByName("sm2p256v1");
     private static ECDomainParameters ecDomainParameters = new ECDomainParameters(x9ECParameters.getCurve(), x9ECParameters.getG(), x9ECParameters.getN());
     private static ECParameterSpec ecParameterSpec = new ECParameterSpec(x9ECParameters.getCurve(), x9ECParameters.getG(), x9ECParameters.getN());
+
+
+    public static KeyPair generateKeyPair(){
+        try {
+            KeyPairGenerator kpGen = KeyPairGenerator.getInstance("EC", "BC");
+            kpGen.initialize(ecParameterSpec, new SecureRandom());
+            KeyPair kp = kpGen.generateKeyPair();
+            return kp;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static BCECPrivateKey getPrivatekeyFromD(BigInteger d){
+        ECPrivateKeySpec ecPrivateKeySpec = new ECPrivateKeySpec(d, ecParameterSpec);
+        return new BCECPrivateKey("EC", ecPrivateKeySpec, BouncyCastleProvider.CONFIGURATION);
+    }
+
+    public static BCECPublicKey getPublickeyFromXY(BigInteger x, BigInteger y){
+        ECPublicKeySpec ecPublicKeySpec = new ECPublicKeySpec(x9ECParameters.getCurve().createPoint(x, y), ecParameterSpec);
+        return new BCECPublicKey("EC", ecPublicKeySpec, BouncyCastleProvider.CONFIGURATION);
+    }
+
+    public static PublicKey getPublickeyFromX509File(File file){
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
+            FileInputStream in = new FileInputStream(file);
+            X509Certificate x509 = (X509Certificate) cf.generateCertificate(in);
+//            System.out.println(x509.getSerialNumber());
+            return x509.getPublicKey();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) throws IOException,
+            NoSuchAlgorithmException, NoSuchProviderException,
+            InvalidAlgorithmParameterException,
+            CertPathBuilderException, InvalidKeyException, SignatureException, CertificateException {
+
+        // 生成公私钥对 ---------------------
+        KeyPair kp = generateKeyPair();
+
+        System.out.println(Hex.toHexString(kp.getPrivate().getEncoded()));
+        System.out.println(Hex.toHexString(kp.getPublic().getEncoded()));
+
+        System.out.println(kp.getPrivate().getAlgorithm());
+        System.out.println("Algorithm:"+kp.getPublic().getAlgorithm());
+        System.out.println("Encoded:"+kp.getPublic().getEncoded());
+
+        System.out.println(kp.getPrivate().getFormat());
+        System.out.println(kp.getPublic().getFormat());
+
+        System.out.println("private key d: " + ((BCECPrivateKey) kp.getPrivate()).getD());
+        System.out.println("public key q:" + ((BCECPublicKey) kp.getPublic()).getQ()); //{x, y, zs...}
+
+
+        // sm2 encrypt and decrypt test ---------------------
+        // KeyPair kp = generateKeyPair();
+        PublicKey publicKey2 = kp.getPublic();
+        PrivateKey privateKey2 = kp.getPrivate();
+        byte[]bs = sm2Encrypt("s".getBytes(), publicKey2);
+        System.out.println(Hex.toHexString(bs));
+        bs = sm2Decrypt(bs, privateKey2);
+        System.out.println(new String(bs));
+
+    }
+
 
     /**
      * bc加解密使用旧标c1||c2||c3，此方法在加密后调用，将结果转化为c1||c3||c2
