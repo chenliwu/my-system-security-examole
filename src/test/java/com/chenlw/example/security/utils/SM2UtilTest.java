@@ -14,6 +14,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -26,54 +27,12 @@ import java.security.spec.X509EncodedKeySpec;
  */
 public class SM2UtilTest {
 
-    /**
-     * 获取公钥对象
-     *
-     * @param inputStream  公钥输入流
-     * @param keyAlgorithm 密钥算法
-     * @return 公钥对象
-     * @throws Exception
-     */
-    public static PublicKey getPublicKey(InputStream inputStream, String keyAlgorithm) throws Exception {
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder sb = new StringBuilder();
-            String readLine = null;
-            while ((readLine = br.readLine()) != null) {
-                if (readLine.charAt(0) == '-') {
-                    continue;
-                } else {
-                    sb.append(readLine);
-                    sb.append('\r');
-                }
-            }
-            X509EncodedKeySpec pubX509 = new X509EncodedKeySpec(Base64.decode(sb.toString().getBytes("UTF-8")));
-            KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm);
-            PublicKey publicKey = keyFactory.generatePublic(pubX509);
-            return publicKey;
-        } catch (FileNotFoundException e) {
-            throw new Exception("公钥路径文件不存在");
-        } catch (IOException e) {
-            throw new Exception("读取公钥异常");
-        } catch (NoSuchAlgorithmException e) {
-            throw new Exception(String.format("生成密钥工厂时没有[%s]此类算法", keyAlgorithm));
-        } catch (InvalidKeySpecException e) {
-            System.out.println(e.getMessage());
-            throw new Exception("生成公钥对象异常");
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-            }
-        }
-    }
 
     @Test
     public void testGetPublicKey() {
         try {
-            PublicKey publicKey = getPublicKey(new FileInputStream("target/ec.pkcs8.pri.pem"),"EC");
+            // PublicKey publicKey = getPublicKey(new FileInputStream("target/ec.pkcs8.pri.pem"),"EC");
+            PublicKey publicKey = SM2KeyUtil.getPublicKey("target/ec.pkcs8.pri.pem");
             Assert.assertNotNull(publicKey);
         } catch (Exception e) {
             System.out.println("异常：" + e.getMessage());
@@ -175,6 +134,31 @@ public class SM2UtilTest {
             System.out.println("SM2 sign without withId result:\n" + ByteUtils.toHexString(sign));
             // 签名验证
             boolean flag = SM2Util.verify(publicKey, srcData.getBytes(StandardCharsets.UTF_8), sign);
+            if (!flag) {
+                Assert.fail("verify failed");
+            }
+        } catch (Exception e) {
+            System.out.println("异常：" + e.getMessage());
+            Assert.fail();
+        }
+
+    }
+
+    /**
+     * 测试从 .pem读取私钥和公钥  签名和验签
+     */
+    @Test
+    public void testGetKeyFromFileToSign_1() {
+        try {
+            PrivateKey priKey = SM2KeyUtil.getPrimaryKey("target/ec.pkcs8.pri.pem");
+            PublicKey publicKey = SM2KeyUtil.getPublicKey("target/ec.x509.pub.pem");
+
+            String srcData = "测试报文数据";
+            // 签名
+            byte[] sign = SM2Util.sign((BCECPrivateKey) priKey, srcData.getBytes(StandardCharsets.UTF_8));
+            System.out.println("SM2 sign without withId result:\n" + ByteUtils.toHexString(sign));
+            // 签名验证
+            boolean flag = SM2Util.verify((BCECPublicKey) publicKey, srcData.getBytes(StandardCharsets.UTF_8), sign);
             if (!flag) {
                 Assert.fail("verify failed");
             }
